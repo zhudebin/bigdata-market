@@ -8,7 +8,8 @@
 > Shuffle的过程包括了Map端和Reduce端。  
 > map 端  
 <img src="http://www.aboutyun.com/data/attachment/forum/201404/10/164714t8ppnec488prnqqo.jpg"/>  
-> 1. Input Split分配给Map  
+> 
+  1. Input Split分配给Map  
   2. Map进行计算，输出[key, value]形式的output  
   3. Map的输出结果缓存在内存里  
   4. 内存中进行Partition，默认是HashPartitioner(采用取模hash (key.hashCode() & Integer.MAX_VALUE) % numReduceTasks)， 目的是将map的结果分给不同的reducer，有几个Partition，就有几个reducer，partition的数目可以在job启动时通过参数 “-Dmapreduc.job.reduces”设置(Hadoop 2.2.0), HashPartitioner可以让map的结果均匀的分给不同机器上的reducer，保证负载均衡。  
