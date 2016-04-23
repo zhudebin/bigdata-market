@@ -7,7 +7,7 @@
 <img src="http://www.aboutyun.com/data/attachment/forum/201404/10/164714zxiexexxg05ihb14.jpg"/>  
 > Shuffle的过程包括了Map端和Reduce端。  
 > map 端  
-<img src="http://www.aboutyun.com/data/attachment/forum/201404/10/164714t8ppnec488prnqqo.jpg"/>
+<img src="http://www.aboutyun.com/data/attachment/forum/201404/10/164714t8ppnec488prnqqo.jpg"/>  
 > 1. Input Split分配给Map  
   2. Map进行计算，输出[key, value]形式的output  
   3. Map的输出结果缓存在内存里  
