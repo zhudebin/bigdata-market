@@ -32,7 +32,9 @@ public class ImpalaJDBCDemo {
         Connection  con = null;
         try {
             con = getFileConnection();
-            con.createStatement().executeUpdate("insert into t1 partition(x=10, y='a') VALUE ()");
+            con.createStatement().executeUpdate("insert into t1 partition(x=10, y='a') VALUE (1)");
+            con.createStatement().executeUpdate("insert into t1(i) partition(x=10, y='a') VALUE (2)");
+            con.createStatement().executeUpdate("insert into t1(i, x, y) VALUE (1, 20, 'b')");
 
         } catch (SQLException e) {
             e.printStackTrace();
