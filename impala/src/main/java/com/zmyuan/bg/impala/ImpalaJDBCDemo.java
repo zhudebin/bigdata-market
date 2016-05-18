@@ -2,6 +2,7 @@ package com.zmyuan.bg.impala;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -16,25 +17,30 @@ public class ImpalaJDBCDemo {
             "jdbc:impala://" + IMPALAD_HOST + ':' + IMPALAD_JDBC_PORT + "/default;auth=noSasl";
     private static final String
             CONNECTION_FILE_URL =
-            "jdbc:impala://" + IMPALAD_HOST + ':' + IMPALAD_JDBC_PORT + "/default;auth=noSasl";
+            "jdbc:impala://" + IMPALAD_HOST + ':' + IMPALAD_JDBC_PORT + "/file_formats;auth=noSasl";
 
     private static final String JDBC_DRIVER_NAME = "com.cloudera.impala.jdbc41.Driver";
 
     public static void main(String[] args) {
-        testQuery();
-
-
+//        testQuery();
+        testInsert();
     }
 
     public static void testInsert() {
         // insert into t1 partition(x=10, y='a')
-
         Connection  con = null;
         try {
             con = getFileConnection();
-            con.createStatement().executeUpdate("insert into t1 partition(x=10, y='a') VALUE (1)");
-            con.createStatement().executeUpdate("insert into t1(i) partition(x=10, y='a') VALUE (2)");
-            con.createStatement().executeUpdate("insert into t1(i, x, y) VALUE (1, 20, 'b')");
+//            con.createStatement().executeUpdate("insert overwrite t1 partition(x=10, y='a') VALUES (1)");
+//            con.createStatement().executeUpdate("insert into t1(i) partition(x=10, y='a') VALUES (2)");
+//            con.createStatement().executeUpdate("insert into t1(i, x, y) values (1, 20, 'b')");
+
+            PreparedStatement pst = con.prepareStatement("insert into t1(i, x, y) VALUEs (?, ?, ?)");
+            pst.setInt(1, 2);
+            pst.setInt(2, 30);
+            pst.setString(3, "c");
+            pst.executeUpdate();
+
 
         } catch (SQLException e) {
             e.printStackTrace();

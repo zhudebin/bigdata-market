@@ -3,8 +3,10 @@ package com.zmyuan.bg.spark.hdfs
 import java.util.Date
 
 import org.apache.commons.csv.CSVFormat
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.io.{Text, LongWritable}
-import org.apache.hadoop.mapred.TextInputFormat
+import org.apache.hadoop.mapred.{JobConf, JobContext, TextInputFormat}
 import org.apache.spark.{SparkContext, SparkConf}
 
 /**
@@ -15,10 +17,11 @@ object HdfsTest1 {
 
   def main(args: Array[String]) {
     val conf = new SparkConf()
-      .setMaster("local[2]")
+      .setMaster("local[6]")
       .setAppName("hdfs test")
 
     conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer")
+//    conf.set("spark.hadoop.validateOutputSpecs", "false")
     val sc = new SparkContext(conf)
 //    val lines = sc.hadoopFile[LongWritable, Text,TextInputFormat]("/Users/zhudebin/Documents/iworkspace/opensource/bigdata_market/spark/doc/text.txt", 2)
 
@@ -60,8 +63,73 @@ object HdfsTest1 {
   }
 
   def hdfsSequence(sc:SparkContext) {
-    val lines = sc.hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], 2)
-    lines.saveAsSequenceFile("hdfs://e102:8020/testDir/test3/test.seq")
+    val lines = sc.hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], 10)
+    lines.saveAsSequenceFile("hdfs://e160:8020/user/ds/test2/test1.seq")
+  }
+
+  def pairHdfsText(sc:SparkContext): Unit = {
+    val lines = sc.hadoopFile(path, classOf[TextInputFormat], classOf[LongWritable], classOf[Text], 10)
+    val pairRDD = lines.map(t2 => {
+      val line = t2._2.toString.split(" ")
+      (line(0), line(1))
+    })
+
+    // 处理 Append，Overwrite，ErrorIfExists，Ignore
+    // 1. Append          1>判断是否有文件夹存在 2> 存在,删除里面 _temp文件夹  3> 设置不需要验证
+    // 2. Overwrite       1>删除目标文件夹
+    // 3. ErrorIfExists   1>判断是否有文件夹存在 2> 存在 抛异常,squidflow 运行异常
+    // 4. Ignore          1>判断是否有文件夹存在 2> 存在, 不执行落地操作
+
+    val processType = 1
+
+    val conf = sc.hadoopConfiguration
+
+    prepareSave(processType, conf, path = "hdfs://e160:8020/user/ds/test3/test1.seq")
+    pairRDD.saveAsNewAPIHadoopDataset(conf)
+
+  }
+
+  def prepareSave(processType : Int, conf:Configuration, path:String): Boolean = {
+
+    processType match {
+      case 1 => {
+        // 1
+        val filePath = new Path(path)
+        val fileSystem = filePath.getFileSystem(conf)
+        val exist = fileSystem.exists(filePath)
+        if(exist) {
+          if(fileSystem.exists(new Path(path + "/_temporary"))) {
+            fileSystem.delete(new Path(path + "/_temporary"), true)
+          }
+        }
+        conf.set("spark.hadoop.validateOutputSpecs", "false")
+        // 2
+
+        // 3
+      }
+      case 2 => ()
+        val filePath = new Path(path)
+        val fileSystem = filePath.getFileSystem(conf)
+        val exist = fileSystem.exists(filePath)
+        if (exist) {
+          fileSystem.delete(filePath, true)
+        }
+      case 3 => ()
+        val filePath = new Path(path)
+        val fileSystem = filePath.getFileSystem(conf)
+        val exist = fileSystem.exists(filePath)
+        if(exist) throw new RuntimeException("exit file")
+      case 4 => ()
+        val filePath = new Path(path)
+        val fileSystem = filePath.getFileSystem(conf)
+        val exist = fileSystem.exists(filePath)
+        if(exist) {
+          return true
+        }
+      case _ => ()
+    }
+
+    false
   }
 
 }

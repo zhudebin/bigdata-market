@@ -69,7 +69,7 @@ object HdfsTest2 {
       }
     }
     val pairRDD = RDD.rddToPairRDDFunctions(r)(nullWritableClassTag, textClassTag, null)
-      pairRDD.saveAsHadoopFile[CustomTextOutputFormat[NullWritable, Text]](path)
+//      pairRDD.saveAsHadoopFile[CustomTextOutputFormat[NullWritable, Text]](path)
 
     val jobConf = new JobConf(sc.hadoopConfiguration)
 
